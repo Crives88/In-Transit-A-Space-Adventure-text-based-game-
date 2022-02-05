@@ -1,0 +1,128 @@
+"""
+In Transit: A Space Adventure
+a text based game by Cory Miglis
+Player must collect all 6 items and then fight the space pirates in the bridge in order to win the game.
+If the player fails to collect all the items before entering the bridge, they will lose the game.
+Player will enter commands go or get followed by the name of a cardinal direction or the item in the room.
+Items will be added to their inventory.
+"""
+
+
+def show_instructions():
+    # print a main menu and the commands
+    print('\nIn Transit: A Space Adventure')
+    print('Collect 6 items to win the game or be defeated by the space pirates!')
+    print('Move commands: go North, go South, go West, go East')
+    print("Add item to Inventory: get 'item name'")
+    print('\n===============================================================================')
+
+
+def show_status(current_room, inventory, rooms):
+    # print the player's current status
+    print('\nYou are in the {}'.format(current_room))
+    # print the current inventory
+    print('Inventory: {}'.format(inventory))
+    # print items in current room
+    if 'Item' in rooms[current_room]:
+        print('You see a {}'.format(rooms[current_room]['Item']))
+    # format line breaks for readability
+    print('\n===============================================================================')
+
+
+def play_again():
+    # prompt player to play again upon game over
+    again = input('\nWould you like to play again? (yes or no) ')
+    if again == 'no':
+        return False
+    elif again == 'yes':
+        return True
+    else:
+        print('Invalid Command...')
+        return False
+
+
+def reset_rooms(rooms):
+    # adds the items back to the rooms at game reset
+    rooms['Security Bay']['Item'] = 'Spacesuit'
+    rooms['Armory']['Item'] = 'Blaster'
+    rooms['Med-Bay']['Item'] = 'Cryo-Paste'
+    rooms['Mess Hall']['Item'] = 'Rations'
+    rooms['Crew Quarters']['Item'] = 'Mag-Boots'
+    rooms['Engine Room']['Item'] = 'Droid'
+    rooms['Bridge']['Item'] = 'the space pirates!'
+    return rooms
+
+
+def main():
+    # Show the player the instructions
+    show_instructions()
+
+    # Start player in the Cryo-Chamber
+    current_room = 'Cryo-Chamber'
+
+    # define the inventory, which is initially empty
+    inventory = []
+
+    # a dictionary linking a room to another room and the items in each room
+    rooms = {
+        'Cryo-Chamber': {'north': 'Security Bay', 'south': 'Mess Hall', 'west': 'Med-Bay', 'east': 'Engine Room'},
+        'Security Bay': {'south': 'Cryo-Chamber', 'east': 'Armory', 'Item': 'spacesuit'},
+        'Armory': {'west': 'Security Bay', 'Item': 'blaster'},
+        'Med-Bay': {'east': 'Cryo-Chamber', 'Item': 'cryo-paste'},
+        'Mess Hall': {'north': 'Cryo-Chamber', 'east': 'Crew Quarters', 'Item': 'rations'},
+        'Crew Quarters': {'west': 'Mess Hall', 'Item': 'mag-boots'},
+        'Engine Room': {'east': 'Cryo-Chamber', 'north': 'Bridge', 'Item': 'droid'},
+        'Bridge': {'south': 'Engine Room', 'Item': 'the space pirates!'}
+    }
+
+    # main game loop (infinite loop)
+    while True:
+
+        # show status
+        show_status(current_room, inventory, rooms)
+
+        # get the player's next move
+        next_move = input('Enter your next move: ').lower().split()
+        if next_move[0] == 'go':
+            if next_move[1] in rooms[current_room]:
+                current_room = rooms[current_room][next_move[1]]
+            else:
+                print('That is not a valid command!')
+        elif next_move[0] == 'get':
+            if 'Item' in rooms[current_room]:
+                if next_move[1] in rooms[current_room]['Item']:
+                    inventory.append(next_move[1])
+                    rooms[current_room].popitem()
+                else:
+                    print('\nThat item is not in this room!')
+            else:
+                print('\nThat item is not in this room!')
+        else:
+            print('Please enter a valid command!')
+
+        if current_room == 'Bridge':
+            if len(inventory) < 6:  # conditional to exit while loop if item in the room is Space Pirate, item count < 6
+                print('\nYou were unprepared and the space pirates have defeated you!')  # print losing message
+
+                if play_again():
+                    rooms = reset_rooms(rooms)
+                    show_instructions()
+                    current_room = 'Cryo-Chamber'
+                    inventory = []
+                else:
+                    print('\nThanks for playing!')
+                    break
+            else:  # conditional to exit while loop if player collects all items and attempts to move into bridge
+                print('\nYou have defeated the space pirates!')  # print winning message
+
+                if play_again():
+                    rooms = reset_rooms(rooms)
+                    show_instructions()
+                    current_room = 'Cryo-Chamber'
+                    inventory = []
+                else:
+                    print('\nThanks for playing!')
+                    break
+
+
+main()
